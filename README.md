@@ -5,6 +5,8 @@ contenuti: mostra dove guardare legalmente un titolo (piattaforme in
 abbonamento, noleggio/acquisto) e genera entrate tramite link di
 affiliazione e pubblicità.
 
+Live su: **https://moodmovie-app.github.io/**
+
 ## Struttura
 
 ```text
@@ -23,7 +25,7 @@ Tutti i placeholder sono raccolti in un solo punto, in cima allo script di
 ```js
 const MONETIZATION = {
     vpnUrl: 'https://nordvpn.com/',       // sostituisci col tuo link di affiliazione VPN
-    amazonAssociateTag: 'INSERISCI-TAG-21' // sostituisci col tuo tracking ID Amazon Associates
+    amazonAssociateTag: 'moodmovie-21'    // tag Amazon Associates reale, già attivo
 };
 ```
 
@@ -32,17 +34,17 @@ istruzioni commentate per collegare il tuo publisher ID Google AdSense.
 
 ## Deploy
 
-1. Crea un account GitHub (gratis) e carica questa cartella come repository.
-2. Crea un account Vercel o Netlify (gratis) e collegalo al repository:
-   essendo un sito statico, non serve alcuna build — pubblica i file così
-   come sono.
-3. Ogni `git push` dopo il primo deploy aggiorna automaticamente il sito.
+Il repository si chiama esattamente `moodmovie-app.github.io` (come
+l'organizzazione): questo lo rende automaticamente il "sito principale"
+dell'organizzazione su GitHub Pages, pubblicato alla radice del dominio
+(nessuna sottocartella). Ogni `git push` sul branch `main` aggiorna il sito
+online entro un minuto, senza costi né limiti di build.
 
-## Account da aprire prima di guadagnare davvero
+## Stato monetizzazione
 
-- **Programma di affiliazione VPN** (es. NordVPN, ExpressVPN, Surfshark) — di solito tramite il loro sito "Affiliati/Partner".
-- **Amazon Associates** (amazon.it) — richiede dati fiscali per essere pagato.
-- **Google AdSense** — richiede verifica del sito e dell'identità.
+- **VPN (Surfshark)**: richiesta inviata, in attesa di approvazione.
+- **Amazon Associates**: approvato, tag `moodmovie-21` attivo.
+- **Google AdSense**: iscrizione in corso.
 
 ## Nota sulla versione TV
 
