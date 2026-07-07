@@ -13,6 +13,10 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
+    <!-- Verifica proprietà Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4309387882525786"
+     crossorigin="anonymous"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
@@ -757,12 +761,11 @@
         if (accepted) loadAds();
     }
     function loadAds() {
-        // Inserisci qui il tuo publisher ID Google AdSense per attivare gli annunci reali,
-        // es: const script = document.createElement('script');
-        // script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX';
-        // script.async = true; script.crossOrigin = 'anonymous';
-        // document.head.appendChild(script);
-        // Poi sostituisci il contenuto di #adSlot (vedi index.html) con il tuo <ins class="adsbygoogle">.
+        // La libreria AdSense (client=ca-pub-4309387882525786) è già caricata in <head>
+        // per la verifica del sito. Qui, dopo il consenso, sostituisci il contenuto di
+        // ogni #adSlot con il tuo blocco annuncio reale, es:
+        // el.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4309387882525786" data-ad-slot="TUO_SLOT_ID" data-ad-format="auto"></ins>';
+        // (adsbygoogle.js = window.adsbygoogle || []).push({});
         document.querySelectorAll('.ad-slot').forEach(el => { el.style.display = 'flex'; el.textContent = 'Spazio pubblicitario'; });
     }
 
