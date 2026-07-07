@@ -95,6 +95,13 @@
         .sort-chip { background: var(--surface); border: 1px solid var(--border-soft); color: var(--text-dim); padding: 9px 17px; border-radius: 999px; font-size: 0.75rem; white-space: nowrap; transition: 0.3s var(--bezier); cursor: pointer; font-weight: 700; }
         .sort-chip:active { transform: scale(0.95); }
         .sort-chip.active { background: var(--gradient-primary); color: white; border-color: transparent; box-shadow: var(--shadow-glow); }
+        .mood-section { max-width: 1200px; margin: 0 auto; padding: 0 16px 16px; position: relative; z-index: 5; }
+        .mood-section-title { font-family: 'Sora', 'Inter', sans-serif; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; color: var(--text-dim); margin: 0 0 10px; }
+        .mood-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+        .mood-row::-webkit-scrollbar { display: none; }
+        .mood-chip { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border-soft); color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.25s var(--bezier); }
+        .mood-chip:hover, .mood-chip:active { background: var(--gradient-primary); border-color: transparent; transform: translateY(-2px); }
+        @media (max-width: 720px) { .mood-section { padding: 0 20px 16px; } }
         .profile-avatar-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; flex-shrink: 0; cursor: pointer; background: var(--surface); display: flex; align-items: center; justify-content: center; transition: 0.3s var(--bezier); }
         .profile-avatar-btn:active { border-color: var(--primary); transform: scale(0.92); }
         .profile-avatar-btn img { width: 100%; height: 100%; object-fit: cover; display: none; }
@@ -502,6 +509,7 @@
             .container { max-width: 100%; padding: 0 48px; }
             /* Il tasto "Home Page" segue lo stesso allineamento a tutta larghezza, in linea con i nomi delle sezioni */
             .home-top-bar { max-width: 100%; padding: 2px 48px 12px; }
+            .mood-section { max-width: 100%; padding: 0 48px 16px; }
         }
         /* ── Banner consenso cookie/pubblicità (GDPR) ── */
         .cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100000; background: rgba(15,15,20,0.98); backdrop-filter: blur(14px); border-top: 1px solid rgba(255,255,255,0.12); padding: 18px 20px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 -4px 24px rgba(0,0,0,0.4); }
@@ -628,6 +636,21 @@
     </div>
 </div>
 
+<!-- Ricerca per mood: il punto d'ingresso principale per chi non sa cosa guardare -->
+<div id="moodSection" class="mood-section">
+    <div class="mood-section-title">Non sai cosa guardare? Scegli il mood</div>
+    <div class="mood-row">
+        <div class="mood-chip" onclick="searchMood('divertente')">😂 Divertente</div>
+        <div class="mood-chip" onclick="searchMood('commovente')">😢 Commovente</div>
+        <div class="mood-chip" onclick="searchMood('horror')">😱 Horror</div>
+        <div class="mood-chip" onclick="searchMood('azione')">💥 Azione</div>
+        <div class="mood-chip" onclick="searchMood('thriller')">😰 Thriller</div>
+        <div class="mood-chip" onclick="searchMood('romantico')">❤️ Romantico</div>
+        <div class="mood-chip" onclick="searchMood('supereroi')">🦸 Supereroi</div>
+        <div class="mood-chip" onclick="searchMood('giallo')">🕵️ Giallo</div>
+    </div>
+</div>
+
 <div id="heroBanner" class="hero-banner"></div>
 
 <div class="container">
@@ -688,7 +711,6 @@
         <button id="comingSoonBtn" class="btn-watch" style="display:none; margin-top:25px; background: rgba(255,255,255,0.08); color: var(--text-dim); cursor: default;" disabled><i class="fa-solid fa-clock" style="margin-right: 8px;"></i> PRESTO DISPONIBILE</button>
         <div id="comingSoonInfo" style="display:none; text-align:center; margin-top:10px; font-size:0.7rem; color: var(--text-dim); line-height:1.5;">
             <div id="comingSoonReleaseDate"></div>
-            <div id="comingSoonAvailableDate"></div>
         </div>
         <button id="followUpcomingBtn" class="btn-original" style="display:none;" onclick="toggleFollowUpcoming()"><i class="fa-solid fa-bell" style="margin-right: 8px;"></i> <span id="followUpcomingBtnLabel">Avvisami quando è disponibile</span></button>
 
@@ -875,44 +897,30 @@
     }
 
     // ── Sezione "In arrivo" / blocco "Presto disponibile" ──
-    // Un film uscito SOLO in streaming (es. Enola Holmes 3, Netflix original) è già disponibile
-    // sulle piattaforme dal giorno stesso: va bloccato solo se la data di uscita non è ancora arrivata.
-    // Un film uscito AL CINEMA invece impiega circa 2 settimane prima di comparire in streaming legale,
-    // quindi resta bloccato anche se la data di uscita è già passata da poco (fino a 2 settimane).
-    // Le serie TV non hanno un'uscita "al cinema": si bloccano solo se la messa in onda non è ancora iniziata.
-    const RELEASE_GRACE_DAYS = 14;
+    // Un titolo è "in arrivo" solo finché non è ancora uscito (data di uscita/prima
+    // visione TMDB). Una volta uscita la data, il pannello "Dove guardarlo" mostra le
+    // piattaforme legali reali non appena TMDB le rileva: niente stime aggiuntive,
+    // perché i tempi di arrivo in streaming legale variano da titolo a titolo e non
+    // seguono una regola fissa prevedibile.
 
     // Formatta una data in italiano esteso (es. "15 luglio 2026"), usata nel blocco "Presto disponibile"
     function formatItDate(d) {
         return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
-    // Controlla se tra le uscite TMDB di un film ce n'è almeno una "al cinema" (type 2 = limited, 3 = wide)
+    // Controlla se tra le uscite TMDB di un film ce n'è almeno una "al cinema" (type 2 = limited, 3 = wide).
+    // Serve solo per la dicitura "al cinema"/"in streaming" nella scheda del titolo, non per bloccarlo.
     function hasTheatricalRelease(releaseDatesResults) {
-        if (!releaseDatesResults || !releaseDatesResults.length) return true; // dato mancante: resta prudenti
+        if (!releaseDatesResults || !releaseDatesResults.length) return false;
         return releaseDatesResults.some(country => (country.release_dates || []).some(rd => rd.type === 2 || rd.type === 3));
     }
 
-    // Determina se un film è ancora bloccato ("presto disponibile"). Richiede una chiamata API solo
-    // per i film già usciti da meno di 2 settimane (per sapere se hanno avuto un'uscita al cinema).
-    async function isMovieLocked(item) {
+    function isMovieLocked(item) {
         const releaseStr = item.release_date;
         if (!releaseStr) return false;
         const release = new Date(releaseStr + 'T00:00:00');
         if (isNaN(release.getTime())) return false;
-        const now = new Date();
-        if (release > now) return true; // deve ancora uscire
-        const graceEnd = new Date(release.getTime() + RELEASE_GRACE_DAYS * 24 * 60 * 60 * 1000);
-        if (now >= graceEnd) return false; // uscito da un pezzo: sicuramente disponibile
-        try {
-            const res = await fetch(`${BASE_URL}/movie/${item.id}/release_dates?api_key=${API_KEY}`);
-            const data = await res.json();
-            const theatrical = hasTheatricalRelease(data.results);
-            if (theatrical) item._availableFrom = graceEnd; // riusato dal badge "In arrivo", evita una seconda chiamata
-            return theatrical;
-        } catch (e) {
-            return true; // in dubbio, meglio non sbloccarlo per errore
-        }
+        return release > new Date();
     }
     // Le serie TV si bloccano solo se non sono ancora andate in onda
     function isTvLocked(item) {
@@ -923,7 +931,7 @@
         return release > new Date();
     }
     function isItemLocked(item, mode) {
-        return mode === 'movie' ? isMovieLocked(item) : Promise.resolve(isTvLocked(item));
+        return Promise.resolve(mode === 'movie' ? isMovieLocked(item) : isTvLocked(item));
     }
 
     // ── "Avvisami quando è disponibile" per i titoli ancora bloccati ──
@@ -1113,7 +1121,7 @@
     }
 
     // Data (YYYY-MM-DD) di N giorni fa: usata per recuperare i candidati alla sezione "In arrivo" tramite discover
-    function getUpcomingCutoffDate(daysBack = 14) {
+    function getUpcomingCutoffDate(daysBack = 0) {
         const d = new Date();
         d.setDate(d.getDate() - daysBack);
         return d.toISOString().slice(0, 10);
@@ -1121,10 +1129,9 @@
     // URL "discover" per i candidati alla sezione "In arrivo" (poi filtrati con isItemLocked).
     // Ordinato per popolarità (come le altre sezioni home) invece che per data, altrimenti le prime pagine
     // rischiano di essere piene solo di titoli sul bordo del filtro data e non ci sarebbe nulla da mostrare.
-    // Per le serie TV il margine è 0 giorni: un'uscita passata non è mai bloccata, quindi non serve richiederle.
     function buildUpcomingUrl(page) {
         const dateField = currentMode === 'movie' ? 'primary_release_date' : 'first_air_date';
-        const cutoff = getUpcomingCutoffDate(currentMode === 'movie' ? RELEASE_GRACE_DAYS : 0);
+        const cutoff = getUpcomingCutoffDate(0);
         return `${BASE_URL}/discover/${currentMode}?api_key=${API_KEY}&language=it-IT&sort_by=popularity.desc&${dateField}.gte=${cutoff}&page=${page}`;
     }
 
@@ -1151,7 +1158,7 @@
     window.onload = () => {
         initCookieConsent();
         window.scrollTo(0,0);
-        document.getElementById('homeAvatarRow').style.display = 'flex';
+        document.getElementById('homeAvatarRow').style.display = 'flex'; document.getElementById('moodSection').style.display = 'block';
         document.getElementById('sortBarRow').style.display = 'none';
         document.getElementById('sectionTitle').style.display = 'none';
         loadContent();
@@ -1250,6 +1257,14 @@
         menu.classList.toggle('active');
     }
 
+    // Chip mood in home: riusa la ricerca "vibes" già esistente, impostando
+    // direttamente il termine invece di passare dal menu del tasto di ricerca.
+    function searchMood(term) {
+        searchType = 'vibes';
+        document.getElementById('searchInput').value = term;
+        searchItems(false);
+    }
+
     function setSearchMode(mode, e) {
         e.stopPropagation();
         searchType = mode;
@@ -1301,7 +1316,7 @@
             document.getElementById('sortBar').style.display = 'flex';
             document.getElementById('sortBarRow').style.display = 'flex';
             document.getElementById('sectionTitle').style.display = 'block';
-            document.getElementById('homeAvatarRow').style.display = 'none';
+            document.getElementById('homeAvatarRow').style.display = 'none'; document.getElementById('moodSection').style.display = 'none';
             document.getElementById('sectionTitle').innerText = `Categoria: ${genreName}`;
             window.scrollTo(0, 0);
         }
@@ -1338,7 +1353,7 @@
         document.getElementById('sectionTitle').style.display = 'none';
         document.getElementById('movieGrid').innerHTML = '';
         document.getElementById('loadMoreBtn').style.display = 'none';
-        document.getElementById('homeAvatarRow').style.display = 'flex';
+        document.getElementById('homeAvatarRow').style.display = 'flex'; document.getElementById('moodSection').style.display = 'block';
         setHeroVisible(false); // evita che l'hero banner resti "incantato" sulla sezione precedente mentre carica quella nuova
         window.scrollTo(0,0);
         loadContent();
@@ -1350,7 +1365,7 @@
         activeFetchController = new AbortController();
         isFetching = true;
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('homeAvatarRow').style.display = 'flex';
+        document.getElementById('homeAvatarRow').style.display = 'flex'; document.getElementById('moodSection').style.display = 'block';
         try {
             // Fetch parallelo: trending, now_playing/on_the_air, top_rated, in arrivo
             const [trendRes, newRes, topRes, upcomingRes] = await Promise.all([
@@ -1571,13 +1586,13 @@
     }
 
     // Testo del badge da mostrare sulle card "In arrivo": data di uscita se il titolo deve ancora
-    // uscire, altrimenti la stima di disponibilità già calcolata da isMovieLocked (item._availableFrom).
+    // uscire, altrimenti la data in cui è effettivamente uscito.
     function upcomingBadgeText(item, mode) {
         const releaseStr = mode === 'movie' ? item.release_date : item.first_air_date;
         const release = new Date(releaseStr + 'T00:00:00');
         if (isNaN(release.getTime())) return '';
         if (release > new Date()) return `Esce ${formatItDateShort(release)}`;
-        return `Disponibile ${formatItDateShort(item._availableFrom || release)}`;
+        return `Uscito ${formatItDateShort(release)}`;
     }
 
     function pickSimilarRef() {
@@ -1695,7 +1710,7 @@
         searchActive = true;
         currentSimilarId = null;
         currentCategoryId = null;
-        document.getElementById('homeAvatarRow').style.display = 'none';
+        document.getElementById('homeAvatarRow').style.display = 'none'; document.getElementById('moodSection').style.display = 'none';
         document.getElementById('sectionTitle').style.display = 'block';
         document.getElementById('loading').style.display = 'block';
         let url;
@@ -1747,7 +1762,7 @@
         grid.className = 'movie-grid';
         document.getElementById('sortBarRow').style.display = 'flex';
         document.getElementById('sectionTitle').style.display = 'block';
-        document.getElementById('homeAvatarRow').style.display = 'none';
+        document.getElementById('homeAvatarRow').style.display = 'none'; document.getElementById('moodSection').style.display = 'none';
         setHeroVisible(false);
         if (!append) grid.innerHTML = '';
         if (!items || items.length === 0 && !append) { grid.innerHTML = `<div style="grid-column:1/-1;">${emptyStateHTML('fa-magnifying-glass', 'Nessun risultato trovato')}</div>`; return; }
@@ -1787,22 +1802,17 @@
         document.getElementById('modalYear').innerText = release ? release.split('-')[0] : 'N/A';
         document.getElementById('modalGenres').innerHTML = data.genres.slice(0,3).map(g => `<span>${g.name}</span>`).join('');
 
-        // Se il titolo non ha ancora "sbloccato" la visione, nasconde i pulsanti di riproduzione e mostra
-        // "PRESTO DISPONIBILE" al loro posto, con la data di uscita e la stima di quando sarà su MoodMovie.
-        // Le serie TV si bloccano solo se non ancora andate in onda (disponibili dallo stesso giorno);
-        // i film usciti solo in streaming si sbloccano subito, quelli usciti al cinema restano bloccati
-        // fino a 2 settimane dopo l'uscita (tempo tipico prima che compaiano sui siti di streaming).
+        // Finché un titolo non è ancora uscito, nasconde il pannello "Dove guardarlo" e mostra
+        // "PRESTO DISPONIBILE" con la data di uscita. Non appena esce, il pannello "Dove guardarlo"
+        // mostra le piattaforme legali reali non appena TMDB le rileva (nessuna stima aggiuntiva).
         let notYetAvailable = false;
         const releaseObj = release ? new Date(release + 'T00:00:00') : null;
         if (releaseObj && !isNaN(releaseObj.getTime())) {
-            const now = new Date();
-            const theatrical = type === 'movie' && hasTheatricalRelease(data.release_dates?.results);
-            const availableFrom = theatrical ? new Date(releaseObj.getTime() + RELEASE_GRACE_DAYS * 24 * 60 * 60 * 1000) : releaseObj;
-            notYetAvailable = now < availableFrom;
+            notYetAvailable = new Date() < releaseObj;
             if (notYetAvailable) {
+                const theatrical = type === 'movie' && hasTheatricalRelease(data.release_dates?.results);
                 const releaseSuffix = type !== 'movie' ? 'in TV' : (theatrical ? 'al cinema' : 'in streaming');
                 document.getElementById('comingSoonReleaseDate').innerText = `${formatItDate(releaseObj)} ${releaseSuffix}`;
-                document.getElementById('comingSoonAvailableDate').innerText = `${formatItDate(availableFrom)} su MoodMovie`;
             }
         }
         document.getElementById('modalProviders').style.display = notYetAvailable ? 'none' : 'block';
@@ -1912,7 +1922,7 @@
     }
 
     async function getSimilar(id, title, type, append = false) {
-        if (!append) { closeModal(); page = 1; currentMovies = []; currentSimilarId = id; searchActive = false; document.getElementById('movieGrid').innerHTML = ''; document.getElementById('sectionTitle').style.display='block'; document.getElementById('sectionTitle').innerText = `Simili a: ${title}`; document.getElementById('homeAvatarRow').style.display='none'; window.scrollTo(0,0); }
+        if (!append) { closeModal(); page = 1; currentMovies = []; currentSimilarId = id; searchActive = false; document.getElementById('movieGrid').innerHTML = ''; document.getElementById('sectionTitle').style.display='block'; document.getElementById('sectionTitle').innerText = `Simili a: ${title}`; document.getElementById('homeAvatarRow').style.display='none'; document.getElementById('moodSection').style.display='none'; window.scrollTo(0,0); }
         if (activeFetchController) activeFetchController.abort();
         activeFetchController = new AbortController();
         isFetching = true;
@@ -2344,7 +2354,7 @@
         document.getElementById('sectionTitle').innerText = "La tua Libreria";
         document.getElementById('sectionTitle').style.display = 'block';
         document.getElementById('sortBarRow').style.display = 'none';
-        document.getElementById('homeAvatarRow').style.display = 'none';
+        document.getElementById('homeAvatarRow').style.display = 'none'; document.getElementById('moodSection').style.display = 'none';
         document.getElementById('loadMoreBtn').style.display = 'none';
         currentSimilarId = null;
         currentCategoryId = null;
@@ -2683,7 +2693,7 @@
         document.getElementById('sectionTitle').innerText = "Profilo";
         document.getElementById('sectionTitle').style.display = 'block';
         document.getElementById('sortBarRow').style.display = 'none';
-        document.getElementById('homeAvatarRow').style.display = 'none';
+        document.getElementById('homeAvatarRow').style.display = 'none'; document.getElementById('moodSection').style.display = 'none';
         document.getElementById('loadMoreBtn').style.display = 'none';
         currentSimilarId = null; currentCategoryId = null;
         const isEnteringProfile = currentView !== 'profile';
