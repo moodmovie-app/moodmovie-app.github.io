@@ -1377,20 +1377,6 @@
 
         // (Il titolo "Home Page" è ora mostrato come bottone nella riga sopra, insieme all'avatar)
 
-        // ── CONTINUA A GUARDARE ──
-        const cwSection = buildHomeSection('Continua a guardare', null, true);
-        const cwRow = cwSection.querySelector('.home-row');
-        const cwItems = continueWatching.filter(c => c.mode === currentMode);
-        if (cwItems.length === 0) {
-            cwRow.innerHTML = emptyStateHTML('fa-clock-rotate-left', 'Nessun contenuto in corso');
-        } else {
-            cwItems.forEach(item => {
-                const card = buildContinueCard(item);
-                cwRow.appendChild(card);
-            });
-        }
-        grid.appendChild(cwSection);
-
         // ── IN EVIDENZA (trending) ──
         const evSection = buildHomeSection('In evidenza', null, false, null);
         const evRow = evSection.querySelector('.home-row');
@@ -1591,24 +1577,6 @@
         return `Disponibile ${formatItDateShort(item._availableFrom || release)}`;
     }
 
-    function buildContinueCard(item) {
-        const card = document.createElement('div');
-        card.className = 'home-card';
-        const pct = item.progress ? Math.min(100, Math.round(item.progress * 100)) : 0;
-        const isFav = favorites.some(f => f.id === item.id && f.type === item.mode);
-        const title = item.title || '';
-        card.innerHTML = `
-          <img src="https://image.tmdb.org/t/p/w342${item.poster_path}" loading="lazy">
-          <button class="home-card-del" onclick="removeContinueWatching(event,${item.id},'${item.mode}')"><i class="fa-solid fa-xmark"></i></button>
-          <button class="home-card-fav ${isFav?'active':''}" onclick="toggleHomeFav(event,${item.id},'${title.replace(/'/g,"\\'")}','${item.poster_path}','${item.mode}',this)"><i class="fa-solid fa-heart"></i></button>
-          <div class="home-card-progress"><div class="home-card-progress-bar" style="width:${pct}%"></div></div>`;
-        card.onclick = (e) => {
-            if (e.target.closest('.home-card-del')) return;
-            openModalAndResume(item);
-        };
-        return card;
-    }
-
     function pickSimilarRef() {
         // Prende un film da: continua a guardare, visti, classifica (in questo ordine)
         const cwItem = continueWatching.find(c => c.mode === currentMode);
@@ -1709,20 +1677,6 @@
         if (idx > -1) continueWatching[idx] = entry;
         else continueWatching.unshift(entry);
         saveContinueWatching();
-    }
-
-    function removeContinueWatching(e, id, mode) {
-        e.stopPropagation();
-        continueWatching = continueWatching.filter(c => !(c.id === id && c.mode === mode));
-        saveContinueWatching();
-        // Ricarica la sezione
-        const cwRow = document.querySelector('.home-sections .home-section:first-child .home-row');
-        if (cwRow) {
-            cwRow.innerHTML = '';
-            const cwItems = continueWatching.filter(c => c.mode === currentMode);
-            if (cwItems.length === 0) cwRow.innerHTML = `<div class="home-empty">Nessun contenuto in corso.</div>`;
-            else cwItems.forEach(item => cwRow.appendChild(buildContinueCard(item)));
-        }
     }
 
     function openModalAndResume(item) {
@@ -2143,15 +2097,6 @@
             if (picCircle) picCircle.innerHTML = profileData.photo ? `<img src="${profileData.photo}" style="display:block">` : '<i class="fa-solid fa-user"></i>';
         }
         reRenderWatchedRanking();
-        if (currentView === 'home' && document.getElementById('homeAvatarRow').style.display !== 'none') {
-            const cwRow = document.querySelector('.home-sections .home-section:first-child .home-row');
-            if (cwRow) {
-                cwRow.innerHTML = '';
-                const cwItems = continueWatching.filter(c => c.mode === currentMode);
-                if (cwItems.length === 0) cwRow.innerHTML = emptyStateHTML('fa-clock-rotate-left', 'Nessun contenuto in corso');
-                else cwItems.forEach(item => cwRow.appendChild(buildContinueCard(item)));
-            }
-        }
     }
 
     function syncMetaKey(key) { return 'syncMeta_' + syncCode + '_' + key; }

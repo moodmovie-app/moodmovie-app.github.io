@@ -298,17 +298,6 @@ function renderHomeSections(trending, recent, topRated) {
     qs('sectionTitle').style.display = 'none';
     qs('loadMoreBtn').style.display = 'none';
 
-    var cwSection = buildHomeSection('Continua a guardare');
-    var cwRow = cwSection.querySelector('.home-row');
-    var cwItems = [];
-    for (var ci = 0; ci < continueWatching.length; ci++) if (continueWatching[ci].mode === currentMode) cwItems.push(continueWatching[ci]);
-    if (cwItems.length === 0) {
-        cwRow.innerHTML = '<div class="home-empty">Nessun contenuto in corso.</div>';
-    } else {
-        for (var cj = 0; cj < cwItems.length; cj++) cwRow.appendChild(buildContinueCard(cwItems[cj]));
-    }
-    grid.appendChild(cwSection);
-
     var evSection = buildHomeSection('In evidenza');
     var evRow = evSection.querySelector('.home-row');
     var evSeen = {};
@@ -467,23 +456,6 @@ function buildHomeCard(item, mode) {
     return card;
 }
 
-function buildContinueCard(item) {
-    var card = document.createElement('div');
-    card.className = 'home-card';
-    var pct = item.progress ? Math.min(100, Math.round(item.progress * 100)) : 0;
-    card.innerHTML =
-        '<img src="https://image.tmdb.org/t/p/w342' + item.poster_path + '" loading="lazy">' +
-        '<button class="home-card-del"><i class="fa-solid fa-xmark"></i></button>' +
-        '<div class="home-card-progress"><div class="home-card-progress-bar" style="width:' + pct + '%"></div></div>';
-    var delBtn = card.querySelector('.home-card-del');
-    delBtn.onclick = function (e) { e.stopPropagation(); removeContinueWatching(item.id, item.mode); };
-    card.onclick = function (e) {
-        if (e.target === delBtn || (delBtn.contains && delBtn.contains(e.target))) return;
-        openModalAndResume(item);
-    };
-    return card;
-}
-
 function pickSimilarRef() {
     var cwItem = findFirst(continueWatching, function (c) { return c.mode === currentMode; });
     if (cwItem) return { id: cwItem.id, title: cwItem.title, mode: cwItem.mode };
@@ -551,23 +523,6 @@ function updateContinueWatching(id, title, poster_path, mode, progress, resumeTi
     };
     if (idx > -1) continueWatching[idx] = entry; else continueWatching.unshift(entry);
     saveContinueWatching();
-}
-
-function removeContinueWatching(id, mode) {
-    var filtered = [];
-    for (var i = 0; i < continueWatching.length; i++) {
-        if (!(continueWatching[i].id === id && continueWatching[i].mode === mode)) filtered.push(continueWatching[i]);
-    }
-    continueWatching = filtered;
-    saveContinueWatching();
-    var cwRow = document.querySelector('.home-sections .home-section:first-child .home-row');
-    if (cwRow) {
-        cwRow.innerHTML = '';
-        var cwItems = [];
-        for (var j = 0; j < continueWatching.length; j++) if (continueWatching[j].mode === currentMode) cwItems.push(continueWatching[j]);
-        if (cwItems.length === 0) cwRow.innerHTML = '<div class="home-empty">Nessun contenuto in corso.</div>';
-        else for (var k = 0; k < cwItems.length; k++) cwRow.appendChild(buildContinueCard(cwItems[k]));
-    }
 }
 
 function openModalAndResume(item) {
