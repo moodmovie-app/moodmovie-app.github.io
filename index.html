@@ -40,9 +40,11 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Verifica proprietà Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4309387882525786"
-     crossorigin="anonymous"></script>
+    <!-- Script AdSense (client=ca-pub-4309387882525786): iniettato dinamicamente dopo che lo
+         splash screen è sparito e il contenuto reale è visibile (vedi tryHideSplash), non qui
+         in fase di parsing, per evitare che gli Auto ads di Google vengano associati alla
+         schermata di splash priva di contenuto (violazione "annunci su schermate senza
+         contenuti del publisher"). -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2031,8 +2033,22 @@
         function tryHideSplash() {
             if (contentsReady && videoEnded && splash) {
                 splash.style.opacity = '0';
-                setTimeout(() => { splash.style.display = 'none'; }, 600);
+                setTimeout(() => { splash.style.display = 'none'; loadAdsenseScript(); }, 600);
             }
+        }
+
+        // Carica lo script AdSense solo ora che lo splash è sparito e la pagina mostra
+        // contenuto reale, per evitare che gli Auto ads vengano scansionati/serviti sulla
+        // schermata di splash (priva di contenuti).
+        let _adsenseScriptLoaded = false;
+        function loadAdsenseScript() {
+            if (_adsenseScriptLoaded) return;
+            _adsenseScriptLoaded = true;
+            const s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4309387882525786';
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
         }
 
         // I contenuti vengono considerati pronti poco dopo l'avvio del caricamento
