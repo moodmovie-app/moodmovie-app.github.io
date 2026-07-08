@@ -124,7 +124,7 @@
         .sort-chip.active { background: var(--gradient-primary); color: white; border-color: transparent; box-shadow: var(--shadow-glow); }
         .mood-section { max-width: 1200px; margin: 0 auto; padding: 0 16px 16px; position: relative; z-index: 5; }
         .mood-section-title { font-family: 'Sora', 'Inter', sans-serif; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; color: var(--text-dim); margin: 0 0 10px; }
-        .mood-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+        .mood-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; margin-top: -8px; }
         .mood-row::-webkit-scrollbar { display: none; }
         .mood-chip { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border-soft); color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.25s var(--bezier); }
         .mood-chip:hover, .mood-chip:active { background: var(--gradient-primary); border-color: transparent; transform: translateY(-2px); }
@@ -271,7 +271,7 @@
 
         /* ── SEZIONI CAST & MERCHANDISE NEL MODALE FILM ── */
         .modal-section-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-        .cast-row { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+        .cast-row { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; padding-top: 8px; margin-top: -8px; }
         .cast-row::-webkit-scrollbar { display: none; }
         .cast-card { flex-shrink: 0; width: 76px; text-align: center; cursor: pointer; transition: transform 0.25s var(--bezier); background: none; border: none; padding: 0; font-family: inherit; }
         .cast-card:hover, .cast-card:active { transform: translateY(-3px); }
