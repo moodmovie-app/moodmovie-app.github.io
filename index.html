@@ -3,8 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MoodMovie Ultra</title>
-    <meta name="description" content="Non sai cosa guardare? Scegli il mood e trova subito film e serie TV su misura per come ti senti, con indicazione di dove guardarli legalmente in streaming.">
+    <title id="pageTitle">MoodMovie Ultra</title>
+    <meta id="metaDescription" name="description" content="Non sai cosa guardare? Scegli il mood e trova subito film e serie TV su misura per come ti senti, con indicazione di dove guardarli legalmente in streaming.">
+    <link id="canonicalLink" rel="canonical" href="https://moodmovie-app.github.io/">
+
+    <!-- Anteprima social (WhatsApp, Facebook, Telegram, X...) -->
+    <meta property="og:type" content="website">
+    <meta id="ogTitle" property="og:title" content="MoodMovie — Trova il film giusto per il tuo mood">
+    <meta id="ogDescription" property="og:description" content="Scegli il mood, filtra per genere e parole chiave: trova subito cosa guardare, con indicazione di dove vederlo legalmente in streaming.">
+    <meta property="og:image" content="https://moodmovie-app.github.io/icon.png">
+    <meta id="ogUrl" property="og:url" content="https://moodmovie-app.github.io/">
+    <meta name="twitter:card" content="summary">
+    <meta id="twitterTitle" name="twitter:title" content="MoodMovie — Trova il film giusto per il tuo mood">
+    <meta id="twitterDescription" name="twitter:description" content="Scegli il mood, filtra per genere e parole chiave: trova subito cosa guardare.">
+    <meta name="twitter:image" content="https://moodmovie-app.github.io/icon.png">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MoodMovie",
+        "url": "https://moodmovie-app.github.io/",
+        "description": "App per scoprire film e serie TV in base al mood, con filtri per genere, parole chiave, periodo e voto, e indicazione di dove guardarli legalmente in streaming.",
+        "applicationCategory": "EntertainmentApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+    }
+    </script>
 
     <meta name="theme-color" content="#07070b">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -860,18 +885,41 @@
         return `https://www.amazon.it/s?k=${q}&i=instant-video&tag=${encodeURIComponent(MONETIZATION.amazonAssociateTag)}`;
     }
 
+    // ── ANALYTICS (Google Analytics 4) ──
+    // Sostituisci con il tuo ID di misurazione da analytics.google.com (formato G-XXXXXXXXXX).
+    // Finché resta il placeholder, loadAnalytics() non fa nulla: nessuno script viene caricato.
+    const ANALYTICS = {
+        ga4MeasurementId: 'G-XXXXXXXXXX'
+    };
+    function loadAnalytics() {
+        if (!ANALYTICS.ga4MeasurementId || ANALYTICS.ga4MeasurementId === 'G-XXXXXXXXXX') return;
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = `https://www.googletagmanager.com/gtag/js?id=${ANALYTICS.ga4MeasurementId}`;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { dataLayer.push(arguments); };
+        gtag('js', new Date());
+        gtag('config', ANALYTICS.ga4MeasurementId, { anonymize_ip: true });
+    }
+    // Wrapper unico per tutti gli eventi custom: se l'utente ha rifiutato i cookie
+    // (o l'ID GA4 non è ancora configurato) non fa nulla, nessun errore.
+    function trackEvent(name, params) {
+        if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
+    }
+
     // ── CONSENSO COOKIE / PUBBLICITÀ (GDPR) ──
     // Gli annunci (e qualsiasi script di terze parti che li carica) partono SOLO dopo
     // che l'utente ha premuto "Accetta". Su "Rifiuta" l'app funziona normalmente ma senza ads.
     function initCookieConsent() {
         const consent = localStorage.getItem('cookieConsent');
-        if (consent === 'accepted') { loadAds(); return; }
+        if (consent === 'accepted') { loadAds(); loadAnalytics(); return; }
         if (consent === null) document.getElementById('cookieBanner').classList.add('show');
     }
     function setCookieConsent(accepted) {
         localStorage.setItem('cookieConsent', accepted ? 'accepted' : 'rejected');
         document.getElementById('cookieBanner').classList.remove('show');
-        if (accepted) loadAds();
+        if (accepted) { loadAds(); loadAnalytics(); }
     }
     function loadAds() {
         // La libreria AdSense (client=ca-pub-4309387882525786) è già caricata in <head>
@@ -881,6 +929,54 @@
         // (adsbygoogle.js = window.adsbygoogle || []).push({});
         document.querySelectorAll('.ad-slot').forEach(el => { el.style.display = 'flex'; el.textContent = 'Spazio pubblicitario'; });
     }
+
+    // ── LINK CONDIVISIBILI PER MOOD (SEO + condivisione social) ──
+    // Aggiornano titolo/descrizione/URL in modo che un mood scelto nel pannello filtri
+    // diventi un link diretto (?mood=slug) condivisibile e distinguibile da Google.
+    const DEFAULT_META = {
+        title: 'MoodMovie Ultra',
+        description: "Non sai cosa guardare? Scegli il mood e trova subito film e serie TV su misura per come ti senti, con indicazione di dove guardarli legalmente in streaming.",
+        url: 'https://moodmovie-app.github.io/'
+    };
+    function updatePageMeta(title, description, url) {
+        document.getElementById('pageTitle').textContent = title;
+        document.getElementById('metaDescription').setAttribute('content', description);
+        document.getElementById('ogTitle').setAttribute('content', title);
+        document.getElementById('ogDescription').setAttribute('content', description);
+        document.getElementById('twitterTitle').setAttribute('content', title);
+        document.getElementById('twitterDescription').setAttribute('content', description);
+        document.getElementById('ogUrl').setAttribute('content', url);
+        document.getElementById('canonicalLink').setAttribute('href', url);
+    }
+    function resetPageMeta() {
+        updatePageMeta(DEFAULT_META.title, DEFAULT_META.description, DEFAULT_META.url);
+    }
+    function moodMetaFor(mood) {
+        return {
+            title: `Film e serie ${mood.label} da guardare | MoodMovie`,
+            description: `Scopri i migliori film e serie TV in mood ${mood.label.toLowerCase()}, con indicazione di dove guardarli legalmente in streaming.`,
+            url: `${DEFAULT_META.url}?mood=${mood.slug}`
+        };
+    }
+    // Riporta URL e meta allo stato home quando si naviga altrove (categoria, ricerca, cambio Film/Serie TV).
+    function clearMoodUrlIfNeeded() {
+        if (location.search) { resetPageMeta(); history.replaceState({}, '', location.pathname); }
+    }
+    window.addEventListener('popstate', () => {
+        const slug = new URLSearchParams(location.search).get('mood');
+        const idx = slug ? MOOD_DATA.findIndex(m => m.slug === slug) : -1;
+        filterMoods = idx > -1 ? new Set([idx]) : new Set();
+        filterGenres = new Set(); filterKeywords = []; filterYearFrom = null; filterYearTo = null; filterMinRating = 0;
+        if (idx > -1) {
+            const meta = moodMetaFor(MOOD_DATA[idx]);
+            updatePageMeta(meta.title, meta.description, meta.url);
+            applyFilters();
+        } else {
+            resetPageMeta();
+            filtersActive = false;
+            switchMode(currentMode);
+        }
+    });
 
     // ── PROFILI (multi-profilo locale, stile "Chi sta guardando?") ──
     // Preferiti, continua a guardare, visti e classifica sono isolati per profilo (vedi pKey).
@@ -1238,23 +1334,23 @@
     }
 
     const MOOD_DATA = [
-        { label: "Commovente", emoji: "😢", keys: ["triste", "piangere", "commovente", "malinconico", "dramma", "drammatico"], genre: 18, keywords: "9717|10531|172088" },
-        { label: "Divertente", emoji: "😂", keys: ["allegro", "ridere", "divertente", "felice", "comicità", "commedia"], genre: 35 },
-        { label: "Azione", emoji: "💥", keys: ["adrenalina", "azione", "movimento", "esplosivo", "combattimento", "lotta"], genre: 28, keywords: "9748" },
-        { label: "Horror", emoji: "😱", keys: ["spavento", "paura", "horror", "terrore", "mostri"], genre: 27 },
-        { label: "Thriller", emoji: "😰", keys: ["brivido", "thriller", "tensione", "suspense"], genre: 53 },
-        { label: "Romantico", emoji: "❤️", keys: ["romantico", "amore", "innamorati", "fidanzati"], genre: 10749 },
-        { label: "Distopico", emoji: "🌆", keys: ["distopico", "distopia", "futuro cupo", "apocalisse", "apocalittico", "post-apocalittico"], keywords: "4565|285366|4458" },
-        { label: "Spionaggio", emoji: "🕶️", keys: ["spionaggio", "spie", "agente segreto", "007"], keywords: "470|10410" },
-        { label: "Catastrofe", emoji: "🌪️", keys: ["catastrofe", "disastro", "calamità", "fine del mondo", "terremoto", "tsunami", "vulcano", "disastri naturali", "sopravvivenza"], keywords: "2333|12586|156066|155254|10484|1604|161042" },
-        { label: "Supereroi", emoji: "🦸", keys: ["supereroi", "super eroi", "super eroe", "vendicatori", "marvel", "dc"], keywords: "9715|180547" },
-        { label: "Spazio", emoji: "🚀", keys: ["spazio", "alieni", "alieno", "ufo", "galassia", "interstellare", "astronave"], keywords: "3801|9882|9951|15255" },
-        { label: "Zombie", emoji: "🧟", keys: ["zombie", "morti viventi", "epidemia", "virus"], keywords: "12377|186671" },
-        { label: "Viaggi nel tempo", emoji: "⏳", keys: ["viaggi nel tempo", "ritorno al futuro", "linea temporale"], keywords: "9840|11340" },
-        { label: "Giallo", emoji: "🕵️", keys: ["investigazione", "detective", "giallo", "poliziesco", "indagine", "noir"], genre: 9648, keywords: "212|9826" },
-        { label: "Storia vera", emoji: "📖", keys: ["biografia", "storia vera", "biopic", "reale"], keywords: "5565|9672" },
-        { label: "Cyberpunk", emoji: "🤖", keys: ["cyberpunk", "tecnologia", "futuristico"], keywords: "290320|15250" },
-        { label: "Sport", emoji: "🏆", keys: ["sport", "calcio", "basket", "atleti", "gara"], keywords: "6075|5661" }
+        { slug: "commovente", label: "Commovente", emoji: "😢", keys: ["triste", "piangere", "commovente", "malinconico", "dramma", "drammatico"], genre: 18, keywords: "9717|10531|172088" },
+        { slug: "divertente", label: "Divertente", emoji: "😂", keys: ["allegro", "ridere", "divertente", "felice", "comicità", "commedia"], genre: 35 },
+        { slug: "azione", label: "Azione", emoji: "💥", keys: ["adrenalina", "azione", "movimento", "esplosivo", "combattimento", "lotta"], genre: 28, keywords: "9748" },
+        { slug: "horror", label: "Horror", emoji: "😱", keys: ["spavento", "paura", "horror", "terrore", "mostri"], genre: 27 },
+        { slug: "thriller", label: "Thriller", emoji: "😰", keys: ["brivido", "thriller", "tensione", "suspense"], genre: 53 },
+        { slug: "romantico", label: "Romantico", emoji: "❤️", keys: ["romantico", "amore", "innamorati", "fidanzati"], genre: 10749 },
+        { slug: "distopico", label: "Distopico", emoji: "🌆", keys: ["distopico", "distopia", "futuro cupo", "apocalisse", "apocalittico", "post-apocalittico"], keywords: "4565|285366|4458" },
+        { slug: "spionaggio", label: "Spionaggio", emoji: "🕶️", keys: ["spionaggio", "spie", "agente segreto", "007"], keywords: "470|10410" },
+        { slug: "catastrofe", label: "Catastrofe", emoji: "🌪️", keys: ["catastrofe", "disastro", "calamità", "fine del mondo", "terremoto", "tsunami", "vulcano", "disastri naturali", "sopravvivenza"], keywords: "2333|12586|156066|155254|10484|1604|161042" },
+        { slug: "supereroi", label: "Supereroi", emoji: "🦸", keys: ["supereroi", "super eroi", "super eroe", "vendicatori", "marvel", "dc"], keywords: "9715|180547" },
+        { slug: "spazio", label: "Spazio", emoji: "🚀", keys: ["spazio", "alieni", "alieno", "ufo", "galassia", "interstellare", "astronave"], keywords: "3801|9882|9951|15255" },
+        { slug: "zombie", label: "Zombie", emoji: "🧟", keys: ["zombie", "morti viventi", "epidemia", "virus"], keywords: "12377|186671" },
+        { slug: "viaggi-nel-tempo", label: "Viaggi nel tempo", emoji: "⏳", keys: ["viaggi nel tempo", "ritorno al futuro", "linea temporale"], keywords: "9840|11340" },
+        { slug: "giallo", label: "Giallo", emoji: "🕵️", keys: ["investigazione", "detective", "giallo", "poliziesco", "indagine", "noir"], genre: 9648, keywords: "212|9826" },
+        { slug: "storia-vera", label: "Storia vera", emoji: "📖", keys: ["biografia", "storia vera", "biopic", "reale"], keywords: "5565|9672" },
+        { slug: "cyberpunk", label: "Cyberpunk", emoji: "🤖", keys: ["cyberpunk", "tecnologia", "futuristico"], keywords: "290320|15250" },
+        { slug: "sport", label: "Sport", emoji: "🏆", keys: ["sport", "calcio", "basket", "atleti", "gara"], keywords: "6075|5661" }
     ];
 
     window.onload = () => {
@@ -1263,7 +1359,17 @@
         document.getElementById('homeAvatarRow').style.display = 'flex';
         document.getElementById('sortBarRow').style.display = 'none';
         document.getElementById('sectionTitle').style.display = 'none';
-        loadContent();
+        // Link condivisibile (?mood=slug): se presente, apre direttamente quel mood invece della home.
+        const sharedMoodSlug = new URLSearchParams(location.search).get('mood');
+        const sharedMoodIdx = sharedMoodSlug ? MOOD_DATA.findIndex(m => m.slug === sharedMoodSlug) : -1;
+        if (sharedMoodIdx > -1) {
+            filterMoods.add(sharedMoodIdx);
+            const meta = moodMetaFor(MOOD_DATA[sharedMoodIdx]);
+            updatePageMeta(meta.title, meta.description, meta.url);
+            applyFilters();
+        } else {
+            loadContent();
+        }
         updateAvatarBtns();
 
         // Sincronizzazione multi-dispositivo: se questo dispositivo ha già un codice
@@ -1407,6 +1513,7 @@
         if (e) e.stopPropagation();
         if (!append) {
             document.getElementById('categoryMenu').classList.remove('active');
+            clearMoodUrlIfNeeded();
             if (activeFetchController) activeFetchController.abort();
             searchActive = false;
             filtersActive = false;
@@ -1441,6 +1548,7 @@
     }
 
     function switchMode(mode) {
+        clearMoodUrlIfNeeded();
         if (activeFetchController) activeFetchController.abort();
         isFetching = false;
         currentMode = mode;
@@ -1809,7 +1917,7 @@
     async function searchItems(append = false) {
         const fullInput = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!fullInput) return;
-        if (!append) { page = 1; document.getElementById('movieGrid').innerHTML = ''; currentMovies = []; }
+        if (!append) { page = 1; document.getElementById('movieGrid').innerHTML = ''; currentMovies = []; clearMoodUrlIfNeeded(); trackEvent('search', { search_term: fullInput, search_type: searchType }); }
         isFetching = true;
         searchActive = true;
         filtersActive = false;
@@ -2077,6 +2185,28 @@
             document.getElementById('homeAvatarRow').style.display = 'none';
             document.getElementById('sectionTitle').innerText = buildFilterSummaryLabel();
             window.scrollTo(0, 0);
+
+            // URL condivisibile: solo nel caso semplice "un solo mood, nessun altro filtro" —
+            // le combinazioni più complesse non hanno uno slug pulito da mostrare in un link.
+            if (filterMoods.size === 1 && filterGenres.size === 0 && filterKeywords.length === 0 && !filterYearFrom && !filterYearTo && filterMinRating === 0) {
+                const mood = MOOD_DATA[[...filterMoods][0]];
+                const meta = moodMetaFor(mood);
+                updatePageMeta(meta.title, meta.description, meta.url);
+                const targetSearch = `?mood=${mood.slug}`;
+                if (location.search !== targetSearch) history.pushState({ mood: mood.slug }, '', targetSearch);
+            } else {
+                resetPageMeta();
+                if (location.search) history.replaceState({}, '', location.pathname);
+            }
+
+            trackEvent('apply_mood_filters', {
+                moods: [...filterMoods].map(i => MOOD_DATA[i].slug).join(',') || undefined,
+                genres: [...filterGenres].join(',') || undefined,
+                keywords: filterKeywords.map(k => k.name).join(',') || undefined,
+                year_from: filterYearFrom || undefined,
+                year_to: filterYearTo || undefined,
+                min_rating: filterMinRating || undefined
+            });
         }
         isFetching = true;
         activeFetchController = new AbortController();
@@ -2125,6 +2255,7 @@
         const data = await res.json();
         const title = data.title || data.name;
         const release = data.release_date || data.first_air_date;
+        trackEvent('select_content', { content_type: type, item_name: title });
         document.getElementById('modalTitle').innerText = title;
         const modalPlotEl = document.getElementById('modalPlot');
         const modalPlotToggleEl = document.getElementById('modalPlotToggle');
@@ -2204,7 +2335,9 @@
         noProviderHint.style.display = providers.length ? 'none' : 'block';
 
         document.getElementById('vpnAffLink').href = MONETIZATION.vpnUrl;
+        document.getElementById('vpnAffLink').onclick = () => trackEvent('vpn_click', { item_name: title });
         document.getElementById('amazonAffLink').href = buildAmazonLink(title);
+        document.getElementById('amazonAffLink').onclick = () => trackEvent('amazon_click', { item_name: title, value: 1, currency: 'EUR' });
 
         document.getElementById('similarTrigger').onclick = () => getSimilar(id, title, type);
         document.getElementById('movieModal').classList.add('open');
@@ -2281,6 +2414,7 @@
 
     function playTrailer() {
         if (!currentTrailerKey) return;
+        trackEvent('play_trailer', {});
         const player = document.getElementById('videoPlayer');
         player.classList.add('cinema');
         player.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentTrailerKey}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;

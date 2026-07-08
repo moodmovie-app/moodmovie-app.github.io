@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://moodmovie-app.github.io/</loc><lastmod>2026-07-08</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=commovente</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=divertente</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=azione</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=horror</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=thriller</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=romantico</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=distopico</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=spionaggio</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=catastrofe</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=supereroi</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=spazio</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=zombie</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=viaggi-nel-tempo</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=giallo</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=storia-vera</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=cyberpunk</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/?mood=sport</loc><lastmod>2026-07-08</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://moodmovie-app.github.io/privacy.html</loc><lastmod>2026-07-08</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
