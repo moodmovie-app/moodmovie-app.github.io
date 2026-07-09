@@ -803,7 +803,7 @@
         </div>
 
         <div id="merchSection" style="margin-top: 28px;">
-            <div class="modal-section-title-row"><i class="fa-solid fa-bag-shopping" style="color:var(--primary);font-size:0.9rem;"></i><span class="home-section-title" data-i18n="merchHeader">Merchandise ufficiale</span></div>
+            <div class="modal-section-title-row"><i class="fa-solid fa-bag-shopping" style="color:var(--primary);font-size:0.9rem;"></i><span class="home-section-title" data-i18n="merchHeader">Merchandise</span></div>
             <div id="merchRow" class="mood-row"></div>
         </div>
     </div>
@@ -1064,7 +1064,7 @@
         adSlotPlaceholder: "Spazio pubblicitario",
         languageHeader: "Lingua",
         castHeader: "Cast",
-        merchHeader: "Merchandise ufficiale",
+        merchHeader: "Merchandise",
         merchTshirt: "Maglietta",
         merchPoster: "Poster",
         merchFigure: "Action Figure",
@@ -1223,7 +1223,7 @@
         adSlotPlaceholder: "Advertisement",
         languageHeader: "Language",
         castHeader: "Cast",
-        merchHeader: "Official Merchandise",
+        merchHeader: "Merchandise",
         merchTshirt: "T-Shirt",
         merchPoster: "Poster",
         merchFigure: "Action Figure",
@@ -1382,7 +1382,7 @@
         adSlotPlaceholder: "Espacio publicitario",
         languageHeader: "Idioma",
         castHeader: "Reparto",
-        merchHeader: "Merchandising oficial",
+        merchHeader: "Merchandising",
         merchTshirt: "Camiseta",
         merchPoster: "Póster",
         merchFigure: "Figura de acción",
@@ -2619,12 +2619,13 @@
 
     function renderFilterMoodRow() {
         const row = document.getElementById('filterMoodRow');
-        row.innerHTML = MOOD_DATA.map((m, i) => `<div class="mood-chip ${filterMoods.has(i) ? 'selected' : ''}" onclick="toggleMoodChip(${i})">${m.emoji} ${m.labels[currentLang]}</div>`).join('');
+        row.innerHTML = MOOD_DATA.map((m, i) => `<div class="mood-chip ${filterMoods.has(i) ? 'selected' : ''}" onclick="toggleMoodChip(${i}, this)">${m.emoji} ${m.labels[currentLang]}</div>`).join('');
     }
 
-    function toggleMoodChip(i) {
+    function toggleMoodChip(i, el) {
         if (filterMoods.has(i)) filterMoods.delete(i); else filterMoods.add(i);
-        renderFilterMoodRow();
+        el.classList.toggle('selected');
+        el.blur();
         updateFilterBadge();
     }
 
@@ -2637,12 +2638,13 @@
                 genreCache[currentMode] = data.genres || [];
             } catch (err) { console.error(err); genreCache[currentMode] = []; }
         }
-        row.innerHTML = genreCache[currentMode].map(g => `<div class="mood-chip ${filterGenres.has(g.id) ? 'selected' : ''}" onclick="toggleGenreChip(${g.id})">${g.name}</div>`).join('');
+        row.innerHTML = genreCache[currentMode].map(g => `<div class="mood-chip ${filterGenres.has(g.id) ? 'selected' : ''}" onclick="toggleGenreChip(${g.id}, this)">${g.name}</div>`).join('');
     }
 
-    function toggleGenreChip(id) {
+    function toggleGenreChip(id, el) {
         if (filterGenres.has(id)) filterGenres.delete(id); else filterGenres.add(id);
-        renderFilterGenreRow();
+        el.classList.toggle('selected');
+        el.blur();
         updateFilterBadge();
     }
 
